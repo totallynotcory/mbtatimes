@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -10,10 +10,84 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context="com.corypotwin.mbtatimes.MainActivity"
+    android:orientation="vertical"
     tools:showIn="@layout/activity_main">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Menu Options Go Here." />
-</RelativeLayout>
+    <LinearLayout
+        android:id="@+id/menu_option_1"
+        android:layout_gravity="center"
+        android:paddingBottom="8dp"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:orientation="horizontal"
+        >
+
+        <ImageView
+            android:layout_marginRight="16dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_action_assignment_ind"/>
+
+        <TextView
+            android:id="@+id/my_routes"
+            android:text="@string/my_routes"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center_vertical"
+            android:textAppearance="?android:textAppearanceLarge"
+            />
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:id="@+id/menu_option_2"
+        android:layout_gravity="center"
+        android:paddingBottom="8dp"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:orientation="horizontal"
+        >
+
+        <ImageView
+            android:layout_marginRight="16dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_action_assignment_ind"/>
+
+        <TextView
+            android:id="@+id/nearby_stations"
+            android:text="@string/nearby_stations"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center_vertical"
+            android:textAppearance="?android:textAppearanceLarge"
+            />
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:id="@+id/menu_option_3"
+        android:layout_gravity="center"
+        android:paddingBottom="8dp"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:orientation="horizontal"
+        >
+
+        <ImageView
+            android:layout_marginRight="16dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_action_assignment_ind"/>
+
+        <TextView
+            android:id="@+id/search_stations"
+            android:text="@string/search_stations"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center_vertical"
+            android:textAppearance="?android:textAppearanceLarge"
+            />
+    </LinearLayout>
+
+</LinearLayout>
