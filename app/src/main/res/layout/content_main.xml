@@ -9,7 +9,7 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context="com.corypotwin.mbtatimes.MainActivity"
+    tools:context=".activities.MainActivity"
     android:orientation="vertical"
     tools:showIn="@layout/activity_main">
 
@@ -18,7 +18,7 @@
         android:layout_gravity="center"
         android:paddingBottom="8dp"
         android:layout_width="match_parent"
-        android:layout_height="50dp"
+        android:layout_height="@dimen/list_item_height"
         android:orientation="horizontal"
         android:onClick="goToMyRoutes"
         >
@@ -45,8 +45,9 @@
         android:layout_gravity="center"
         android:paddingBottom="8dp"
         android:layout_width="match_parent"
-        android:layout_height="50dp"
+        android:layout_height="@dimen/list_item_height"
         android:orientation="horizontal"
+        android:onClick="goToNearbyStations"
         >
 
         <ImageView
@@ -71,8 +72,9 @@
         android:layout_gravity="center"
         android:paddingBottom="8dp"
         android:layout_width="match_parent"
-        android:layout_height="50dp"
+        android:layout_height="@dimen/list_item_height"
         android:orientation="horizontal"
+        android:onClick="goToMyCriteriaSelect"
         >
 
         <ImageView

@@ -10,5 +10,17 @@
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
+    <string-array name="mode_array">
+        <item>Bus</item>
+        <item>Subway</item>
+        <item>Commuter Rail</item>
+    </string-array>
 
+    <string-array name="empty_array"></string-array>
+
+    <string name="title_activity_route_details">RouteDetails</string>
+
+    <string name="coming_in">Coming in:</string>
+    <string name="title_activity_criteria_search">CriteriaSearch</string>
+    <string name="title_activity_nearby_stations">NearbyStations</string>
 </resources>
