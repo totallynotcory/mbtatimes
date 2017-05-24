@@ -1,9 +1,16 @@
 package com.corypotwin.mbtatimes.activities;
 
 import android.content.Intent;
+import android.database.Cursor;
+import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.UserDictionary;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -13,13 +20,32 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
+import com.corypotwin.mbtatimes.MbtaApiEndpoint;
 import com.corypotwin.mbtatimes.R;
+import com.corypotwin.mbtatimes.RouteDetailsRecyclerViewAdapter;
+import com.corypotwin.mbtatimes.SecretApiKeyFile;
+import com.corypotwin.mbtatimes.TripDetails;
+import com.corypotwin.mbtatimes.apidata.MbtaData;
+import com.corypotwin.mbtatimes.database.MyRoutesProvider;
+import com.corypotwin.mbtatimes.fragments.RouteDetailsFragment;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import okhttp3.HttpUrl;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 
 public class MyRoutes extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
+    RouteDetailsFragment aRouteDetailsFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,16 +54,6 @@ public class MyRoutes extends AppCompatActivity
         setContentView(R.layout.activity_my_routes);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                //  TODO: This is where we want to put the New Route Intent
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -48,6 +64,8 @@ public class MyRoutes extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
         navigationView.getMenu().getItem(0).setChecked(true);
+
+        aRouteDetailsFragment = (RouteDetailsFragment) getSupportFragmentManager().findFragmentById(R.id.content_route_details);
     }
 
     @Override
@@ -87,9 +105,6 @@ public class MyRoutes extends AppCompatActivity
         startActivity(intent);
     }
 
-
-
-
     //  TODO:  Generalize this so it can be called from everywhere instead of supporting it all over the place.
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
@@ -100,9 +115,13 @@ public class MyRoutes extends AppCompatActivity
         if (id == R.id.nav_my_routes) {
             // Nothing will happen as it's the current action
         } else if (id == R.id.nav_nearby_stations) {
-            //  TODO:  Add Nearby Stations intent
+            this.finish();
+            Intent intent = new Intent(this, NearbyStations.class);
+            startActivity(intent);
         } else if (id == R.id.nav_search_stations) {
-            //  TODO:  Add Search Stations intent
+            this.finish();
+            Intent intent = new Intent(this, CriteriaSearch.class);
+            startActivity(intent);
         } else if (id == R.id.nav_settings) {
             //  TODO:  Add Settings intent
         }
@@ -110,5 +129,9 @@ public class MyRoutes extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    public void deleteFabOnClick(View view){
+        aRouteDetailsFragment.fabOnClick("deleteSavedRoutes");
     }
 }

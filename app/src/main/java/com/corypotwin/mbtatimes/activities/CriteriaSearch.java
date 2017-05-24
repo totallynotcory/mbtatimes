@@ -3,6 +3,8 @@ package com.corypotwin.mbtatimes.activities;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.design.widget.NavigationView;
+import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
@@ -10,6 +12,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -42,7 +45,8 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-public class CriteriaSearch extends AppCompatActivity {
+public class CriteriaSearch extends AppCompatActivity
+        implements NavigationView.OnNavigationItemSelectedListener {
 
     final String TAG = "MyRoutes";
 
@@ -65,7 +69,7 @@ public class CriteriaSearch extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_criteria_search);
-        ButterKnife.bind(this);
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -74,6 +78,10 @@ public class CriteriaSearch extends AppCompatActivity {
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.setDrawerListener(toggle);
         toggle.syncState();
+
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
+        navigationView.getMenu().getItem(2).setChecked(true);
 
         // modeSpinner
         modeSpinner = (Spinner) findViewById(R.id.mode_spinner);
@@ -84,7 +92,7 @@ public class CriteriaSearch extends AppCompatActivity {
         modeSpinner.setAdapter(adapter);
         getModeResults();
 
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(false);
 
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
@@ -100,13 +108,9 @@ public class CriteriaSearch extends AppCompatActivity {
         // See https://g.co/AppIndexing/AndroidStudio for more information.
         client.connect();
         Action viewAction = Action.newAction(
-                Action.TYPE_VIEW, // TODO: choose an action type.
-                "MyRoutes Page", // TODO: Define a title for the content shown.
-                // TODO: If you have web page content that matches this app activity's content,
-                // make sure this auto-generated web page URL is correct.
-                // Otherwise, set the URL to null.
+                Action.TYPE_VIEW,
+                "MyRoutes Page",
                 Uri.parse("http://host/path"),
-                // TODO: Make sure this auto-generated app URL is correct.
                 Uri.parse("android-app://com.corypotwin.mbtatimes/http/host/path")
         );
         AppIndex.AppIndexApi.start(client, viewAction);
@@ -119,13 +123,9 @@ public class CriteriaSearch extends AppCompatActivity {
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
         Action viewAction = Action.newAction(
-                Action.TYPE_VIEW, // TODO: choose an action type.
-                "MyRoutes Page", // TODO: Define a title for the content shown.
-                // TODO: If you have web page content that matches this app activity's content,
-                // make sure this auto-generated web page URL is correct.
-                // Otherwise, set the URL to null.
+                Action.TYPE_VIEW,
+                "MyRoutes Page",
                 Uri.parse("http://host/path"),
-                // TODO: Make sure this auto-generated app URL is correct.
                 Uri.parse("android-app://com.corypotwin.mbtatimes/http/host/path")
         );
         AppIndex.AppIndexApi.end(client, viewAction);
@@ -147,7 +147,6 @@ public class CriteriaSearch extends AppCompatActivity {
     }
 
     private void getModeResults() {
-        //  TODO setup overloading instead of this junk with "unusued"
         MbtaApiEndpoint apiService = setupRetrofitForCall();
         Call<MbtaData> call = apiService.getRoutes(SecretApiKeyFile.getKey());
         call.enqueue(new Callback<MbtaData>() {
@@ -161,7 +160,7 @@ public class CriteriaSearch extends AppCompatActivity {
             @Override
             public void onFailure(Call<MbtaData> call, Throwable t) {
                 // Log error here since request failed
-                Log.e(TAG, "onFailure: stuff got messed up: " + t.toString());
+                Log.e(TAG, "onFailure: retrieving mode of transportation failed: " + t.toString());
             }
         });
     }
@@ -174,7 +173,7 @@ public class CriteriaSearch extends AppCompatActivity {
         }
 
         public void onNothingSelected(AdapterView<?> parent) {
-            // Another interface callback
+
         }
     }
 
@@ -291,18 +290,51 @@ public class CriteriaSearch extends AppCompatActivity {
     }
 
     public void callApi(View button) {
-        ArrayList<TripDetails> tripRequestDataList = new ArrayList<>();
-        TripDetails tripRequestData = new TripDetails();
-        tripRequestData.setDirectionId(directionsHashMap.get(directionSpinner.getSelectedItem().toString()));
-        tripRequestData.setMode(modeSpinner.getSelectedItem().toString());
-        tripRequestData.setRouteId(routeHashMap.get(routeSpinner.getSelectedItem().toString()));
-        tripRequestData.setStopId(stopHashMap.get(stopSpinner.getSelectedItem().toString()));
-        tripRequestData.setRouteAndDirection(routeSpinner.getSelectedItem().toString() + ": "
-                + directionSpinner.getSelectedItem().toString());
-        tripRequestDataList.add(tripRequestData);
 
-        Intent intent = new Intent(this, RouteDetails.class);
-        intent.putParcelableArrayListExtra("tripDetails", tripRequestDataList);
-        startActivity(intent);
+        if(directionSpinner.getSelectedItem() != null &&
+                modeSpinner.getSelectedItem() != null &&
+                routeSpinner.getSelectedItem() != null &&
+                stopSpinner.getSelectedItem() != null) {
+            ArrayList<TripDetails> tripRequestDataList = new ArrayList<>();
+            TripDetails tripRequestData = new TripDetails();
+            tripRequestData.setDirectionId(directionsHashMap.get(directionSpinner.getSelectedItem().toString()));
+            tripRequestData.setMode(modeSpinner.getSelectedItem().toString());
+            tripRequestData.setRouteId(routeHashMap.get(routeSpinner.getSelectedItem().toString()));
+            tripRequestData.setStopId(stopHashMap.get(stopSpinner.getSelectedItem().toString()));
+            tripRequestData.setRouteAndDirection(routeSpinner.getSelectedItem().toString() + ": "
+                    + directionSpinner.getSelectedItem().toString());
+            tripRequestDataList.add(tripRequestData);
+
+            Intent intent = new Intent(this, RouteDetails.class);
+            intent.putParcelableArrayListExtra("tripDetails", tripRequestDataList);
+            startActivity(intent);
+        }
+    }
+
+
+    //  TODO:  Generalize this so it can be called from everywhere instead of supporting it all over the place.
+    @SuppressWarnings("StatementWithEmptyBody")
+    @Override
+    public boolean onNavigationItemSelected(MenuItem item) {
+        // Handle navigation view item clicks here.
+        int id = item.getItemId();
+
+        if (id == R.id.nav_search_stations) {
+            // Nothing will happen as it's the current action
+        } else if (id == R.id.nav_nearby_stations) {
+            this.finish();
+            Intent intent = new Intent(this, NearbyStations.class);
+            startActivity(intent);
+        } else if (id == R.id.nav_my_routes) {
+            this.finish();
+            Intent intent = new Intent(this, MyRoutes.class);
+            startActivity(intent);
+        } else if (id == R.id.nav_settings) {
+            //  TODO:  Add Settings intent
+        }
+
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawer.closeDrawer(GravityCompat.START);
+        return true;
     }
 }

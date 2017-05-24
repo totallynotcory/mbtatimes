@@ -16,11 +16,11 @@
         <item>Commuter Rail</item>
     </string-array>
 
-    <string-array name="empty_array"></string-array>
+    <string name="title_activity_route_details">Route Details</string>
+    <string name="route_added_toast">Route added to your saved routes!</string>
 
-    <string name="title_activity_route_details">RouteDetails</string>
 
     <string name="coming_in">Coming in:</string>
-    <string name="title_activity_criteria_search">CriteriaSearch</string>
-    <string name="title_activity_nearby_stations">NearbyStations</string>
+    <string name="title_activity_criteria_search">Search for Route</string>
+    <string name="title_activity_nearby_stations">Nearby Stations</string>
 </resources>

@@ -1,18 +1,26 @@
 package com.corypotwin.mbtatimes.fragments;
 
 import android.Manifest;
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.graphics.drawable.Drawable;
 import android.location.Location;
+import android.net.Uri;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
+import android.widget.Toast;
 
 import com.corypotwin.mbtatimes.MbtaApiEndpoint;
 import com.corypotwin.mbtatimes.R;
@@ -21,6 +29,8 @@ import com.corypotwin.mbtatimes.SecretApiKeyFile;
 import com.corypotwin.mbtatimes.TripDetails;
 import com.corypotwin.mbtatimes.apidata.CurrentLocationStops;
 import com.corypotwin.mbtatimes.apidata.MbtaData;
+import com.corypotwin.mbtatimes.apidata.Mode;
+import com.corypotwin.mbtatimes.database.MyRoutesProvider;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
@@ -49,6 +59,8 @@ public class RouteDetailsFragment extends Fragment implements GoogleApiClient.Co
 
     private GoogleApiClient mGoogleApiClient;
 
+    public boolean showClickboxes = false;
+
     private RecyclerView mRecyclerView;
     private RecyclerView.Adapter mAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
@@ -61,28 +73,36 @@ public class RouteDetailsFragment extends Fragment implements GoogleApiClient.Co
 
     private int cardNumber = 0;
 
-    public RouteDetailsFragment() {
-    }
+    public RouteDetailsFragment(){}
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        Intent intent = getActivity().getIntent();
-        final ArrayList<TripDetails> requestedTrips = intent.getParcelableArrayListExtra("tripDetails");
-
         View routeDetailsFragment = inflater.inflate(R.layout.fragment_route_details, container, false);
         mRecyclerView = (RecyclerView) routeDetailsFragment.findViewById(R.id.recycler_view);
-        // use this setting to improve performance if you know that changes
-        // in content do not change the layout size of the RecyclerView
-        // mRecyclerView.setHasFixedSize(true);
 
-        // use a linear layout manager
         mLayoutManager = new LinearLayoutManager(getContext());
         mRecyclerView.setLayoutManager(mLayoutManager);
 
-        if(requestedTrips == null) {
+        String callingAct = getActivity().getLocalClassName();
+
+        if(callingAct.equals("activities.RouteDetails")){
+            Intent intent = getActivity().getIntent();
+            final ArrayList<TripDetails> requestedTrips = intent.getParcelableArrayListExtra("tripDetails");
+            if(requestedTrips != null){
+                requestTripsByDetails(requestedTrips);
+            }
+
+        } else if (callingAct.equals("activities.NearbyStations")){
             locationSearch = true;
+
+        } else if (callingAct.equals("activities.MyRoutes")){
+            requestTripsByDetails(loadUserRoutesData());
+
+        } else {
+            Toast.makeText(getActivity(), "How did you get here??  Get out, get out, get out!!", Toast.LENGTH_LONG).show();
+
         }
 
         if (mGoogleApiClient == null) {
@@ -101,14 +121,38 @@ public class RouteDetailsFragment extends Fragment implements GoogleApiClient.Co
             Log.d(TAG, "onCreateView: booms");
         }
 
-        if(requestedTrips != null){
-            callRequestedTrips(requestedTrips);
-        }
-
         return routeDetailsFragment;
     }
 
-    private void callRequestedTrips(ArrayList<TripDetails> requestedTrips){
+    public ArrayList<TripDetails> loadUserRoutesData() {
+        Uri routes = MyRoutesProvider.CONTENT_URI;
+        ArrayList<TripDetails> allTripDetails = new ArrayList<>();
+        Cursor c = getActivity().getContentResolver().query(routes, null, null, null, MyRoutesProvider.COLUMN_ROUTE);
+        String result = "Results:";
+
+        if (!c.moveToFirst()) {
+            Toast.makeText(getActivity(), result + " no content yet!", Toast.LENGTH_LONG).show();
+            return null;
+        }else{
+            do{
+                TripDetails aSingleTrip = new TripDetails();
+                aSingleTrip.setMyRouteId(c.getInt(c.getColumnIndex(MyRoutesProvider.ID)));
+                aSingleTrip.setMode(c.getString(c.getColumnIndex(MyRoutesProvider.COLUMN_MODE)));
+                aSingleTrip.setStopId(c.getString(c.getColumnIndex(MyRoutesProvider.COLUMN_STOP)));
+                aSingleTrip.setRouteId(c.getString(c.getColumnIndex(MyRoutesProvider.COLUMN_ROUTE)));
+                aSingleTrip.setDirectionId(c.getInt(c.getColumnIndex(MyRoutesProvider.COLUMN_DIRECTION)));
+
+                aSingleTrip.setRouteAndDirection(aSingleTrip.getRouteId() + ": " + aSingleTrip.getDirectionId());
+
+                allTripDetails.add(aSingleTrip);
+
+            } while (c.moveToNext());
+            return allTripDetails;
+        }
+    }
+
+    private void requestTripsByDetails(ArrayList<TripDetails> requestedTrips){
+
         for (int i = 0; i < requestedTrips.size(); i++) {
             TripDetails aRequestedTrip = requestedTrips.get(i);
             String stopId = aRequestedTrip.getStopId();
@@ -136,7 +180,7 @@ public class RouteDetailsFragment extends Fragment implements GoogleApiClient.Co
         }
     }
 
-    private void callRequestedTrips(String stopId){
+    private void requestTripsByLocation(String stopId){
 
         HttpUrl BASE_URL = HttpUrl.parse("http://realtime.mbta.com/developer/api/v2/");
 
@@ -152,14 +196,14 @@ public class RouteDetailsFragment extends Fragment implements GoogleApiClient.Co
 
         Call<MbtaData> call = apiService.getPredictionsByStop(SecretApiKeyFile.getKey(), stopId);
 
+        mAdapter = new RouteDetailsRecyclerViewAdapter(mTripDetailList, this);
+
         call.enqueue(new Callback<MbtaData>() {
             @Override
             public void onResponse(Call<MbtaData> call, Response<MbtaData> response) {
                 Log.d(TAG, "onResponse: " + response.message());
                 MbtaData stopTimePredictions = response.body();
-                setupTimePredictions(stopTimePredictions);
-
-                mAdapter = new RouteDetailsRecyclerViewAdapter(mTripDetailList);
+                setupTimePredictionsForLocations(stopTimePredictions);
                 mRecyclerView.setAdapter(mAdapter);
             }
 
@@ -169,6 +213,8 @@ public class RouteDetailsFragment extends Fragment implements GoogleApiClient.Co
                 Log.e(TAG, "onFailure: stuff got messed up: " + t.toString());
             }
         });
+
+
     }
 
     private void setupTimePredictions(MbtaData stopTimePredictions, String mode, String routeId, int directionId, TripDetails aRequestedTrip) {
@@ -179,8 +225,13 @@ public class RouteDetailsFragment extends Fragment implements GoogleApiClient.Co
             if (stopTimePredictions.getMode().get(i).getModeName().equals(mode)) {
                 for (int j = 0; j < stopTimePredictions.getMode().get(i).getRoute().size(); j++) {
                     if (stopTimePredictions.getMode().get(i).getRoute().get(j).getRouteId().equals(routeId)) {
+                        String routeName = stopTimePredictions.getMode().get(i).getRoute().get(j).getRouteName();
+
                         for (int k = 0; k < stopTimePredictions.getMode().get(i).getRoute().get(j).getDirection().size(); k++) {
                             if (stopTimePredictions.getMode().get(i).getRoute().get(j).getDirection().get(k).getDirectionId().equals((directionId + ""))) {
+                                String directionName = stopTimePredictions.getMode().get(i).getRoute().get(j).getDirection().get(k).getDirectionName();
+                                aRequestedTrip.setRouteAndDirection(routeName + ": " + directionName);
+
                                 for (int l = 0; l < stopTimePredictions.getMode().get(i).getRoute().get(j).getDirection().get(k).getTrip().size(); l++) {
                                     timePredictions.add(stopTimePredictions.getMode().get(i).getRoute().get(j).getDirection().get(k).getTrip().get(l).getPreAway());
                                 }
@@ -193,39 +244,73 @@ public class RouteDetailsFragment extends Fragment implements GoogleApiClient.Co
 
         aRequestedTrip.setTimeEstimates(assembleHumanReadableTime(timePredictions));
 
-        ArrayList<TripDetails> tripDetailList = new ArrayList<>();
-        tripDetailList.add(aRequestedTrip);
-        mAdapter = new RouteDetailsRecyclerViewAdapter(tripDetailList);
+        aRequestedTrip.setModeImage(extractModeImage(mode));
+        aRequestedTrip.setStationName(stopTimePredictions.getStopName());
+
+        mTripDetailList.add(aRequestedTrip);
+        mAdapter = new RouteDetailsRecyclerViewAdapter(mTripDetailList, this);
         mRecyclerView.setAdapter(mAdapter);
     }
 
-    private void setupTimePredictions(MbtaData stopTimePredictions){
+    private void setupTimePredictionsForLocations(MbtaData stopTimePredictions){
         TripDetails detailsOfTrip = new TripDetails();
 
         detailsOfTrip.setStopId(stopTimePredictions.getStopId());
         detailsOfTrip.setStationName(stopTimePredictions.getStopName());
 
-        if( stopTimePredictions.getMode().size() > 0 ){
-            detailsOfTrip.setMode(stopTimePredictions.getMode().get(0).getModeName());
-            detailsOfTrip.setRouteId(stopTimePredictions.getMode().get(0).getRoute().get(0).getRouteId());
+        if( stopTimePredictions.getMode().size() > 0 ) {
+            Mode currentMode = stopTimePredictions.getMode().get(0);
+            detailsOfTrip.setMode(currentMode.getModeName());
+            detailsOfTrip.setRouteId(currentMode.getRoute().get(0).getRouteId());
 
-            detailsOfTrip.setRouteAndDirection(stopTimePredictions.getMode().get(0).getRoute().get(0).getRouteName() + ": " +
-                    stopTimePredictions.getMode().get(0).getRoute().get(0).getDirection().get(0).getDirectionName());
+            detailsOfTrip.setModeImage(extractModeImage(currentMode.getModeName()));
 
-            Integer directionId = Integer.parseInt(stopTimePredictions.getMode().get(0).getRoute().get(0).getDirection().get(0).getDirectionId());
-            detailsOfTrip.setDirectionId(directionId);}
+            detailsOfTrip.setRouteAndDirection(currentMode.getRoute().get(0).getRouteName() + ": " +
+                    currentMode.getRoute().get(0).getDirection().get(0).getDirectionName());
 
-            List<Integer> timePredictions = new ArrayList<>();
-            for (int i = 0; i < stopTimePredictions.getMode().get(0).getRoute().get(0).getDirection().get(0).getTrip().size(); i++) {
-                timePredictions.add(stopTimePredictions.getMode().get(0).getRoute().get(0).getDirection().get(0).getTrip().get(i).getPreAway());
+            Integer directionId = Integer.parseInt(currentMode.getRoute().get(0).getDirection().get(0).getDirectionId());
+            detailsOfTrip.setDirectionId(directionId);
+
+            if (currentMode.getRoute().size() > 0) {
+                List<Integer> timePredictions = new ArrayList<>();
+
+                for (int i = 0; i < currentMode.getRoute().get(0).getDirection().get(0).getTrip().size(); i++) {
+                    timePredictions.add(currentMode.getRoute().get(0).getDirection().get(0).getTrip().get(i).getPreAway());
+                }
+
+                detailsOfTrip.setTimeEstimates(assembleHumanReadableTime(timePredictions));
             }
+        }
 
-        detailsOfTrip.setTimeEstimates(assembleHumanReadableTime(timePredictions));
         mTripDetailList.add(detailsOfTrip);
+    }
+
+    private Drawable extractModeImage(String mode){
+        Drawable modeImage;
+
+        switch (mode) {
+            case "Bus":
+                modeImage = getResources().getDrawable(R.drawable.ic_bus);
+                break;
+            case "Subway":
+                modeImage = getResources().getDrawable(R.drawable.ic_subway);
+                break;
+            case "Commuter Rail":
+                modeImage = getResources().getDrawable(R.drawable.ic_train);
+                break;
+            default:
+                modeImage = getResources().getDrawable(R.drawable.ic_train);
+        }
+
+        return modeImage;
     }
 
     private static String assembleHumanReadableTime(List<Integer> timePredictions){
         String readableTimePredictions = new String();
+        if (timePredictions.size() == 0) {
+            return "No current predictions!";
+        }
+
         for (int i = 0; i < timePredictions.size(); i++) {
             readableTimePredictions = readableTimePredictions + timeConversion(timePredictions.get(i));
         }
@@ -309,7 +394,7 @@ public class RouteDetailsFragment extends Fragment implements GoogleApiClient.Co
                 Log.d(TAG, "onResponse: " + response.message());
                 CurrentLocationStops nearbyRoutes = response.body();
                 for (int i = 0; i < nearbyRoutes.getStop().size(); i++) {
-                    callRequestedTrips(nearbyRoutes.getStop().get(i).getStopId());
+                    requestTripsByLocation(nearbyRoutes.getStop().get(i).getStopId());
                 }
             }
 
@@ -354,5 +439,57 @@ public class RouteDetailsFragment extends Fragment implements GoogleApiClient.Co
         mGoogleApiClient.disconnect();
         super.onStop();
     }
+
+    public void fabOnClick(String intention){
+        if(locationSearch){
+            Log.d(TAG, "fabOnClick: we shouldn't be seeing a fab because we're in location");
+        } else if (intention.equals("deleteSavedRoutes")) {
+            CardView cards = (CardView) mRecyclerView.findViewById(R.id.card_view);
+            CheckBox checkboxCharlie = (CheckBox) cards.findViewById(R.id.delete_checkbox);
+
+            if(checkboxCharlie.getVisibility() == View.VISIBLE){
+                showClickboxes = false;
+                for (int i = 0; i < mTripDetailList.size(); i++) {
+                    TripDetails oneTripDetail = mTripDetailList.get(i);
+                    if(oneTripDetail.getCheckboxState()){
+                        mTripDetailList.remove(oneTripDetail);
+
+                        ContentValues values = new ContentValues();
+                        ContentResolver contentResolver = getContext().getContentResolver();
+
+                        int idToDelete = oneTripDetail.getMyRouteId();
+
+                        Uri thisUri = MyRoutesProvider.CONTENT_URI.buildUpon().appendPath(String.valueOf(idToDelete)).build();
+
+                        int deletedIds = contentResolver.delete(thisUri, null, null);
+                        oneTripDetail.getMyRouteId();
+
+                    }
+                }
+                mAdapter.notifyDataSetChanged();
+            } else if (checkboxCharlie.getVisibility() == View.GONE) {
+                showClickboxes = true;
+                mAdapter.notifyDataSetChanged();
+            }
+        } else if (intention.equals("addToTable")){
+                addRouteToUserMyRoutes(mTripDetailList.get(0));
+            }
+        }
+
+
+        private void addRouteToUserMyRoutes(TripDetails aRequestedTrip){
+            ContentValues values = new ContentValues();
+            ContentResolver contentResolver = getContext().getContentResolver();
+
+            values.put(MyRoutesProvider.COLUMN_STOP, aRequestedTrip.getStopId());
+            values.put(MyRoutesProvider.COLUMN_ROUTE, aRequestedTrip.getRouteId());
+            values.put(MyRoutesProvider.COLUMN_MODE, aRequestedTrip.getMode());
+            values.put(MyRoutesProvider.COLUMN_DIRECTION, aRequestedTrip.getDirectionId());
+
+            contentResolver.insert(MyRoutesProvider.CONTENT_URI, values);
+
+            Toast.makeText(getContext(),
+                    getResources().getText(R.string.route_added_toast), Toast.LENGTH_LONG).show();
+        }
 
 }

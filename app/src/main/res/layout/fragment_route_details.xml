@@ -9,8 +9,10 @@
     tools:context=".fragments.RouteDetailsFragment"
     android:orientation="vertical"
     tools:showIn="@layout/activity_route_details"
+    android:id="@+id/content_route_detail"
     >
-    <android.support.v7.widget.RecyclerView
+
+        <android.support.v7.widget.RecyclerView
         android:id="@+id/recycler_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

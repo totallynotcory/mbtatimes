@@ -1,5 +1,6 @@
 package com.corypotwin.mbtatimes;
 
+import android.graphics.drawable.Drawable;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -14,6 +15,10 @@ public class TripDetails implements Parcelable {
     int directionId;
     String routeAndDirection;
     String stationName;
+    Boolean checkboxState = false;
+    int myRouteId;
+
+    Drawable modeImage;
 
     String timeEstimates;
 
@@ -110,4 +115,29 @@ public class TripDetails implements Parcelable {
     public void setStationName(String stationName) {
         this.stationName = stationName;
     }
+
+    public Drawable getModeImage() {
+        return modeImage;
+    }
+
+    public void setModeImage(Drawable modeImage) {
+        this.modeImage = modeImage;
+    }
+
+    public Boolean getCheckboxState() {
+        return checkboxState;
+    }
+
+    public void setCheckboxState(Boolean checkboxState) {
+        this.checkboxState = checkboxState;
+    }
+
+    public int getMyRouteId() {
+        return myRouteId;
+    }
+
+    public void setMyRouteId(int myRouteId) {
+        this.myRouteId = myRouteId;
+    }
+
 }

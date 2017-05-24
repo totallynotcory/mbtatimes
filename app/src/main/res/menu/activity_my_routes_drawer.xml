@@ -4,17 +4,19 @@
     <group android:checkableBehavior="single">
         <item
             android:id="@+id/nav_my_routes"
-            android:icon="@drawable/ic_action_assignment_ind"
-            android:title="@string/my_routes"  />
+            android:icon="@drawable/ic_home"
+            android:title="@string/my_routes"
+            />
         <item
             android:id="@+id/nav_nearby_stations"
-            android:icon="@drawable/ic_action_assignment_ind"
-            android:title="@string/nearby_stations"  />
+            android:icon="@drawable/ic_location"
+            android:title="@string/nearby_stations"
+            />
         <item
             android:id="@+id/nav_search_stations"
-            android:icon="@drawable/ic_action_assignment_ind"
-            android:title="@string/search_stations" />
-
+            android:icon="@drawable/ic_search"
+            android:title="@string/search_stations"
+            />
     </group>
 
     <item android:title="Settings">
