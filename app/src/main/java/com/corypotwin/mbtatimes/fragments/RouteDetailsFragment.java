@@ -38,6 +38,7 @@ import com.corypotwin.mbtatimes.TripDetails;
 import com.corypotwin.mbtatimes.apidata.CurrentLocationStops;
 import com.corypotwin.mbtatimes.apidata.MbtaData;
 import com.corypotwin.mbtatimes.apidata.Mode;
+import com.corypotwin.mbtatimes.database.MyRoutesContract;
 import com.corypotwin.mbtatimes.database.MyRoutesProvider;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -156,6 +157,9 @@ public class RouteDetailsFragment extends Fragment implements GoogleApiClient.Co
         return routeDetailsFragment;
     }
 
+    /**
+     * if not GoogleApiClient exists, connect and create ApiClient
+     */
     protected synchronized void buildGoogleApiClient(){
         if (mGoogleApiClient == null && checkPlayServices()) {
             mGoogleApiClient = new GoogleApiClient.Builder(getContext())
@@ -165,15 +169,30 @@ public class RouteDetailsFragment extends Fragment implements GoogleApiClient.Co
                     .build();
         }
     }
-
+    private boolean checkPlayServices() {
+        int resultCode = GooglePlayServicesUtil
+                .isGooglePlayServicesAvailable(getContext());
+        if (resultCode != ConnectionResult.SUCCESS) {
+            if (GooglePlayServicesUtil.isUserRecoverableError(resultCode)) {
+                GooglePlayServicesUtil.getErrorDialog(resultCode, getActivity(),
+                        PLAY_SERVICES_RESOLUTION_REQUEST).show();
+            } else {
+                Toast.makeText(getContext(),
+                        "This device is not supported.", Toast.LENGTH_LONG)
+                        .show();
+            }
+            return false;
+        }
+        return true;
+    }
     /**
      * retrieve all of a user's MyRoutes from MyRoutes database
      * @return ArrayList of all MyRoutes for current user
      */
     public ArrayList<TripDetails> loadUserRoutesData() {
-        Uri routes = MyRoutesProvider.CONTENT_URI;
+        Uri routes = MyRoutesContract.CONTENT_URI;
         ArrayList<TripDetails> allTripDetails = new ArrayList<>();
-        Cursor c = getActivity().getContentResolver().query(routes, null, null, null, MyRoutesProvider.COLUMN_ROUTE);
+        Cursor c = getActivity().getContentResolver().query(routes, null, null, null, MyRoutesContract.COLUMN_ROUTE);
         String result = "Results:";
 
         if (!c.moveToFirst()) {
@@ -183,11 +202,11 @@ public class RouteDetailsFragment extends Fragment implements GoogleApiClient.Co
         }else{
             do{
                 TripDetails aSingleTrip = new TripDetails();
-                aSingleTrip.setMyRouteId(c.getInt(c.getColumnIndex(MyRoutesProvider.ID)));
-                aSingleTrip.setMode(c.getString(c.getColumnIndex(MyRoutesProvider.COLUMN_MODE)));
-                aSingleTrip.setStopId(c.getString(c.getColumnIndex(MyRoutesProvider.COLUMN_STOP)));
-                aSingleTrip.setRouteId(c.getString(c.getColumnIndex(MyRoutesProvider.COLUMN_ROUTE)));
-                aSingleTrip.setDirectionId(c.getInt(c.getColumnIndex(MyRoutesProvider.COLUMN_DIRECTION)));
+                aSingleTrip.setMyRouteId(c.getInt(c.getColumnIndex(MyRoutesContract.ID)));
+                aSingleTrip.setMode(c.getString(c.getColumnIndex(MyRoutesContract.COLUMN_MODE)));
+                aSingleTrip.setStopId(c.getString(c.getColumnIndex(MyRoutesContract.COLUMN_STOP)));
+                aSingleTrip.setRouteId(c.getString(c.getColumnIndex(MyRoutesContract.COLUMN_ROUTE)));
+                aSingleTrip.setDirectionId(c.getInt(c.getColumnIndex(MyRoutesContract.COLUMN_DIRECTION)));
 
                 aSingleTrip.setRouteAndDirection(aSingleTrip.getRouteId() + ": " + aSingleTrip.getDirectionId());
 
@@ -272,6 +291,14 @@ public class RouteDetailsFragment extends Fragment implements GoogleApiClient.Co
 
     }
 
+    /**
+     * given data returned from MBTA api, setup
+     * @param stopTimePredictions time predictions containing data from api
+     * @param mode requested mode of transport
+     * @param routeId requested route id
+     * @param directionId requested direction id
+     * @param aRequestedTrip data contained the requested trip
+     */
     private void setupTimePredictions(MbtaData stopTimePredictions, String mode, String routeId, int directionId, TripDetails aRequestedTrip) {
 
         List<Integer> timePredictions = new ArrayList<>();
@@ -307,6 +334,10 @@ public class RouteDetailsFragment extends Fragment implements GoogleApiClient.Co
         mRecyclerView.setAdapter(mAdapter);
     }
 
+    /**
+     * given details of trip from location, extract time predictions
+     * @param stopTimePredictions data returned from mbta api
+     */
     private void setupTimePredictionsForLocations(MbtaData stopTimePredictions){
 
         if( stopTimePredictions.getMode().size() > 0 ) {
@@ -341,6 +372,11 @@ public class RouteDetailsFragment extends Fragment implements GoogleApiClient.Co
         }
     }
 
+    /**
+     * given a mode of transportation, return the corresponding drawable id
+     * @param mode mode of transport
+     * @return image id
+     */
     private Drawable extractModeImage(String mode){
         Drawable modeImage;
 
@@ -361,6 +397,12 @@ public class RouteDetailsFragment extends Fragment implements GoogleApiClient.Co
         return modeImage;
     }
 
+    /**
+     * given multiple times, return them in a human readable string
+     * @param timePredictions list of int time predictions
+     * @return human readable string in the form of XXh, XXm, XXs; XXh, XXm, XXs; ...
+     *  or No current predictions!
+     */
     private static String assembleHumanReadableTime(List<Integer> timePredictions){
         String readableTimePredictions = new String();
         if (timePredictions.size() == 0) {
@@ -373,6 +415,11 @@ public class RouteDetailsFragment extends Fragment implements GoogleApiClient.Co
         return readableTimePredictions;
     }
 
+    /**
+     * given a number of seconds, convert it to hours, minutes, and seconds
+     * @param totalSeconds # of seconds
+     * @return XXh, XXm, XXs
+     */
     private static String timeConversion(int totalSeconds) {
 
         final int MINUTES_IN_AN_HOUR = 60;
@@ -397,6 +444,9 @@ public class RouteDetailsFragment extends Fragment implements GoogleApiClient.Co
         return returnString + "; ";
     }
 
+    /**
+     * when getting data back from the MBTA, this makes calls to deal with it
+     */
     class RouteDetailsCallback implements Callback<MbtaData> {
 
         private final String stopId;
@@ -429,23 +479,9 @@ public class RouteDetailsFragment extends Fragment implements GoogleApiClient.Co
 
     }
 
-    private boolean checkPlayServices() {
-        int resultCode = GooglePlayServicesUtil
-                .isGooglePlayServicesAvailable(getContext());
-        if (resultCode != ConnectionResult.SUCCESS) {
-            if (GooglePlayServicesUtil.isUserRecoverableError(resultCode)) {
-                GooglePlayServicesUtil.getErrorDialog(resultCode, getActivity(),
-                        PLAY_SERVICES_RESOLUTION_REQUEST).show();
-            } else {
-                Toast.makeText(getContext(),
-                        "This device is not supported.", Toast.LENGTH_LONG)
-                        .show();
-            }
-            return false;
-        }
-        return true;
-    }
-
+    /**
+     * for location based search, make call to api and deal with data returned
+     */
     public void callLocationApi(){
         HttpUrl BASE_URL = HttpUrl.parse("http://realtime.mbta.com/developer/api/v2/");
 
@@ -499,7 +535,6 @@ public class RouteDetailsFragment extends Fragment implements GoogleApiClient.Co
             callLocationApi();
         }
     }
-
 
     @Override
     public void onConnectionSuspended(int i) {
@@ -575,7 +610,7 @@ public class RouteDetailsFragment extends Fragment implements GoogleApiClient.Co
 
                 int idToDelete = oneTripDetail.getMyRouteId();
 
-                Uri uriOfTripToDelete = MyRoutesProvider.CONTENT_URI.buildUpon().
+                Uri uriOfTripToDelete = MyRoutesContract.CONTENT_URI.buildUpon().
                         appendPath(String.valueOf(idToDelete)).build();
                 contentResolver.delete(uriOfTripToDelete, null, null);
             }
@@ -591,12 +626,12 @@ public class RouteDetailsFragment extends Fragment implements GoogleApiClient.Co
 
         ContentValues values = new ContentValues();
 
-        values.put(MyRoutesProvider.COLUMN_STOP, aRequestedTrip.getStopId());
-        values.put(MyRoutesProvider.COLUMN_ROUTE, aRequestedTrip.getRouteId());
-        values.put(MyRoutesProvider.COLUMN_MODE, aRequestedTrip.getMode());
-        values.put(MyRoutesProvider.COLUMN_DIRECTION, aRequestedTrip.getDirectionId());
+        values.put(MyRoutesContract.COLUMN_STOP, aRequestedTrip.getStopId());
+        values.put(MyRoutesContract.COLUMN_ROUTE, aRequestedTrip.getRouteId());
+        values.put(MyRoutesContract.COLUMN_MODE, aRequestedTrip.getMode());
+        values.put(MyRoutesContract.COLUMN_DIRECTION, aRequestedTrip.getDirectionId());
 
-        contentResolver.insert(MyRoutesProvider.CONTENT_URI, values);
+        contentResolver.insert(MyRoutesContract.CONTENT_URI, values);
 
         Toast.makeText(getContext(),
                 getResources().getText(R.string.route_added_toast), Toast.LENGTH_LONG).show();

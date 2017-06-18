@@ -29,8 +29,6 @@ public class RouteDetails extends AppCompatActivity
             aRouteDetailsFragment = (RouteDetailsFragment)  getSupportFragmentManager().getFragment(savedInstanceState, FRAGMENT_TAG);
         }
 
-
-
         setContentView(R.layout.activity_route_details);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);

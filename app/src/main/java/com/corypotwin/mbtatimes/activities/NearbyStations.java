@@ -55,7 +55,6 @@ public class NearbyStations extends AppCompatActivity
         getSupportFragmentManager().putFragment(outState, FRAGMENT_TAG, aRouteDetailsFragment);
     }
 
-    //  TODO:  Generalize this so it can be called from everywhere instead of supporting it all over the place.
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {

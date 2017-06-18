@@ -57,7 +57,6 @@ public class MyRoutes extends AppCompatActivity
             aRouteDetailsFragment = (RouteDetailsFragment) getSupportFragmentManager().getFragment(savedInstanceState, FRAGMENT_TAG);
         }
 
-
         setContentView(R.layout.activity_my_routes);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -98,7 +97,6 @@ public class MyRoutes extends AppCompatActivity
         startActivity(intent);
     }
 
-    //  TODO:  Generalize this so it can be called from everywhere instead of supporting it all over the place.
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {

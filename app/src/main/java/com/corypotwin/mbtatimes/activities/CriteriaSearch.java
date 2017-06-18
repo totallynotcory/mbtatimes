@@ -54,10 +54,10 @@ public class CriteriaSearch extends AppCompatActivity
 
     final String TAG = "MyRoutes";
 
-    @BindView(R.id.mode_spinner) Spinner modeSpinner;
-    @BindView(R.id.route_spinner) Spinner routeSpinner;
-    @BindView(R.id.direction_spinner) Spinner directionSpinner;
-    @BindView(R.id.stop_spinner) Spinner stopSpinner;
+    Spinner modeSpinner;
+    Spinner routeSpinner;
+    Spinner directionSpinner;
+    Spinner stopSpinner;
 
     private GoogleApiClient client;
     private MbtaData dataFromApi;
@@ -95,7 +95,7 @@ public class CriteriaSearch extends AppCompatActivity
         if(isNetWorkAvailable(this)) {
             errorBox.setVisibility(View.GONE);
             // modeSpinner
-            modeSpinner = (Spinner) findViewById(R.id.mode_spinner);
+//            modeSpinner = (Spinner) findViewById(R.id.mode_spinner);
             ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
                     R.array.mode_array, android.R.layout.simple_spinner_item);
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -145,6 +145,7 @@ public class CriteriaSearch extends AppCompatActivity
         AppIndex.AppIndexApi.end(client, viewAction);
         client.disconnect();
     }
+
 
     private MbtaApiEndpoint setupRetrofitForCall(){
         HttpUrl BASE_URL = HttpUrl.parse("http://realtime.mbta.com/developer/api/v2/");
@@ -322,8 +323,6 @@ public class CriteriaSearch extends AppCompatActivity
         }
     }
 
-
-    //  TODO:  Generalize this so it can be called from everywhere instead of supporting it all over the place.
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {

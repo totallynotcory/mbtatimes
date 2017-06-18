@@ -18,25 +18,6 @@ public interface MbtaApiEndpoint {
     // Request method and URL specified in the annotation
     // Callback for the parsed response is the last parameter
 
-    // bus schedule by route #
-    @GET("schedulebyroutes?format=json")
-    Call<MbtaData> getSchedule(@Query("routes") String route);
-
-    //  predictions by route
-    @GET("predictionsbyroute?format=json")
-    Call<MbtaData> getPredictionByRoute(@Query("routes") String route);
-
-    //  predictions by route
-    @GET("predictionsbyroutes?format=json")
-    Call<MbtaData> getPredictionByRoutes(@Query("routes") String routes);
-
-    // train schedule by stop and route
-    @GET("schedulebystop?format=json")
-    Call<MbtaData> getTrainScheduleByStop(@Query("stop") String stop,
-                                          @Query("route") String route);
-
-
-
     // train schedule by stop and route
     @GET("stopsbylocation?format=json")
     Call<CurrentLocationStops> getStopsByLocation(@Query("api_key") String apiKey,
