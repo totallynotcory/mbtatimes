@@ -1,99 +1,108 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".activities.MainActivity"
+    tools:showIn="@layout/activity_main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context=".activities.MainActivity"
-    android:orientation="vertical"
-    tools:showIn="@layout/activity_main">
-
-    <LinearLayout
-        android:id="@+id/menu_option_1"
-        android:layout_gravity="center"
-        android:paddingBottom="8dp"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/list_item_height"
-        android:orientation="horizontal"
-        android:onClick="goToMyRoutes"
-        >
-
-        <ImageView
-            android:layout_marginTop="16dp"
-            android:layout_marginRight="16dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_home"/>
-
-        <TextView
-            android:id="@+id/my_routes"
-            android:text="@string/my_routes"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="center_vertical"
-            android:textAppearance="?android:textAppearanceLarge"
-            />
-    </LinearLayout>
+    app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
 
     <LinearLayout
-        android:id="@+id/menu_option_2"
-        android:layout_gravity="center"
-        android:paddingBottom="8dp"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/list_item_height"
-        android:orientation="horizontal"
-        android:onClick="goToNearbyStations"
-        >
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+>
 
-        <ImageView
-            android:layout_marginTop="16dp"
-            android:layout_marginRight="16dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_location"/>
-
-        <TextView
-            android:id="@+id/nearby_stations"
-            android:text="@string/title_activity_nearby_stations"
+        <LinearLayout
+            android:id="@+id/menu_option_1"
+            android:layout_gravity="center"
+            android:paddingBottom="8dp"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="center_vertical"
-            android:textAppearance="?android:textAppearanceLarge"
-            />
+            android:layout_height="@dimen/list_item_height"
+            android:orientation="horizontal"
+            android:onClick="goToMyRoutes"
+            >
+
+            <ImageView
+                android:layout_marginTop="16dp"
+                android:layout_marginRight="16dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_home"/>
+
+            <TextView
+                android:id="@+id/my_routes"
+                android:text="@string/my_routes"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical"
+                android:textAppearance="?android:textAppearanceLarge"
+                />
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:id="@+id/menu_option_2"
+            android:layout_gravity="center"
+            android:paddingBottom="8dp"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/list_item_height"
+            android:orientation="horizontal"
+            android:onClick="goToNearbyStations"
+            >
+
+            <ImageView
+                android:layout_marginTop="16dp"
+                android:layout_marginRight="16dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_location"/>
+
+            <TextView
+                android:id="@+id/nearby_stations"
+                android:text="@string/title_activity_nearby_stations"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical"
+                android:textAppearance="?android:textAppearanceLarge"
+                />
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:id="@+id/menu_option_3"
+            android:layout_gravity="center"
+            android:paddingBottom="8dp"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/list_item_height"
+            android:orientation="horizontal"
+            android:onClick="goToMyCriteriaSelect"
+            >
+
+            <ImageView
+                android:layout_marginTop="16dp"
+                android:layout_marginRight="16dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_search"/>
+
+            <TextView
+                android:id="@+id/search_stations"
+                android:text="@string/title_activity_criteria_search"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical"
+                android:textAppearance="?android:textAppearanceLarge"
+                />
+        </LinearLayout>
+
     </LinearLayout>
 
-
-    <LinearLayout
-        android:id="@+id/menu_option_3"
-        android:layout_gravity="center"
-        android:paddingBottom="8dp"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/list_item_height"
-        android:orientation="horizontal"
-        android:onClick="goToMyCriteriaSelect"
-        >
-
-        <ImageView
-            android:layout_marginTop="16dp"
-            android:layout_marginRight="16dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_search"/>
-
-        <TextView
-            android:id="@+id/search_stations"
-            android:text="@string/title_activity_criteria_search"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="center_vertical"
-            android:textAppearance="?android:textAppearanceLarge"
-            />
-    </LinearLayout>
-
-</LinearLayout>
+</ScrollView>

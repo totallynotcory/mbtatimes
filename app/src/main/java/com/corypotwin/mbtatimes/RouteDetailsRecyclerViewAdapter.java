@@ -69,13 +69,13 @@ public class RouteDetailsRecyclerViewAdapter extends RecyclerView.Adapter<RouteD
         String routeAndDirectionString = thisTripDetails.getRouteAndDirection();
         String timesString = thisTripDetails.getTimeEstimates();
         String stationString = thisTripDetails.getStationName();
-        Drawable transportationType = thisTripDetails.getModeImage();
         Boolean isSelected = thisTripDetails.getCheckboxState();
+        Drawable transportationType = thisTripDetails.getModeImage();
 
         holder.routeAndDirectionText.setText(routeAndDirectionString);
         holder.timesText.setText(timesString);
-        holder.modeImage.setImageDrawable(transportationType);
         holder.stationText.setText(stationString);
+        holder.modeImage.setImageDrawable(transportationType);
 
         CheckBox checkbox = holder.deleteCheckbox;
 

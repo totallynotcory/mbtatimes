@@ -15,6 +15,7 @@
     <string name="no_nearby_stations_error">There are no stations in your vicinity!</string>
     <string name="no_internet_connection">Oops, we can\'t connect to the internet!</string>
     <string name="no_saved_routes">No routes saved yet!</string>
+    <string name="device_not_supported">"This device is not supported."</string>
 
     <string-array name="mode_array">
         <item>Bus</item>
@@ -23,6 +24,10 @@
     </string-array>
 
     <string name="call_api_button">Find Times</string>
+
+    <string name="delete_selection">Choose Routes to Delete Fab</string>
+    <string name="delete_selected">Delete Selected Fab</string>
+    <string name="add_current">Add Current Route To Favorites Fab</string>
 
     <string name="coming_in">Coming in:</string>
 </resources>

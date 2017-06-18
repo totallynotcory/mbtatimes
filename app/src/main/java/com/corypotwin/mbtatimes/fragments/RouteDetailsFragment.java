@@ -178,7 +178,7 @@ public class RouteDetailsFragment extends Fragment implements GoogleApiClient.Co
                         PLAY_SERVICES_RESOLUTION_REQUEST).show();
             } else {
                 Toast.makeText(getContext(),
-                        "This device is not supported.", Toast.LENGTH_LONG)
+                        getResources().getText(R.string.device_not_supported), Toast.LENGTH_LONG)
                         .show();
             }
             return false;
@@ -584,12 +584,14 @@ public class RouteDetailsFragment extends Fragment implements GoogleApiClient.Co
             if(checkboxCharlie.getVisibility() == View.VISIBLE){
                 showClickboxes = false;
                 thisButton.setImageDrawable(getResources().getDrawable(R.drawable.ic_delete_white_24dp));
+                thisButton.setContentDescription(getResources().getText(R.string.delete_selection));
                 getActivity().setTitle(getResources().getText(R.string.my_routes));
                 deleteCheckedMyRoutes();
                 mAdapter.notifyDataSetChanged();
             } else if (checkboxCharlie.getVisibility() == View.GONE) {
                 showClickboxes = true;
                 thisButton.setImageDrawable(getResources().getDrawable(R.drawable.ic_delete_forever_white_24dp));
+                thisButton.setContentDescription(getResources().getText(R.string.delete_selected));
                 getActivity().setTitle(getResources().getText(R.string.delete_my_routes));
                 mAdapter.notifyDataSetChanged();
             }
