@@ -22,5 +22,7 @@
         <item>Commuter Rail</item>
     </string-array>
 
+    <string name="call_api_button">Find Times</string>
+
     <string name="coming_in">Coming in:</string>
 </resources>

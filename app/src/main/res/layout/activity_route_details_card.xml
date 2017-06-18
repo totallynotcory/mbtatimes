@@ -41,12 +41,10 @@
                 android:orientation="vertical">
                 <TextView
                     android:id="@+id/station_name"
-                    android:text="Station"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent" />
                 <TextView
                     android:id="@+id/route_and_direction_text"
-                    android:text="71: Outbound"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent" />
             </LinearLayout>
@@ -61,7 +59,6 @@
         <TextView
             android:id="@+id/times_text"
             android:paddingLeft="16dp"
-            android:text="1 m 45 s, 1h 12 m 55 s, 3 m"
             android:layout_width="wrap_content"
             android:layout_height="match_parent" />
 

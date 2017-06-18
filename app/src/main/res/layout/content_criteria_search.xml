@@ -60,7 +60,7 @@
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Call API"
+            android:text="@string/call_api_button"
             android:id="@+id/button"
             android:layout_marginTop="32dp"
             android:onClick="callApi"/>
