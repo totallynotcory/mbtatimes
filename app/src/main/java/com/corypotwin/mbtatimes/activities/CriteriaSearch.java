@@ -40,8 +40,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
 import okhttp3.HttpUrl;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -95,7 +93,7 @@ public class CriteriaSearch extends AppCompatActivity
         if(isNetWorkAvailable(this)) {
             errorBox.setVisibility(View.GONE);
             // modeSpinner
-//            modeSpinner = (Spinner) findViewById(R.id.mode_spinner);
+            modeSpinner = (Spinner) findViewById(R.id.mode_spinner);
             ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
                     R.array.mode_array, android.R.layout.simple_spinner_item);
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
