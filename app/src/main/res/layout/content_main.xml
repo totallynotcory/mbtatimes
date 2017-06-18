@@ -60,7 +60,7 @@
 
         <TextView
             android:id="@+id/nearby_stations"
-            android:text="@string/nearby_stations"
+            android:text="@string/title_activity_nearby_stations"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="center_vertical"
@@ -88,7 +88,7 @@
 
         <TextView
             android:id="@+id/search_stations"
-            android:text="@string/search_stations"
+            android:text="@string/title_activity_criteria_search"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="center_vertical"

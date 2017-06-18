@@ -3,12 +3,19 @@ package com.corypotwin.mbtatimes.fragments;
 import android.Manifest;
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
+import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
@@ -20,6 +27,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.corypotwin.mbtatimes.MbtaApiEndpoint;
@@ -32,7 +40,9 @@ import com.corypotwin.mbtatimes.apidata.MbtaData;
 import com.corypotwin.mbtatimes.apidata.Mode;
 import com.corypotwin.mbtatimes.database.MyRoutesProvider;
 import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 
 import java.util.ArrayList;
@@ -67,11 +77,16 @@ public class RouteDetailsFragment extends Fragment implements GoogleApiClient.Co
 
     private ArrayList<TripDetails> mTripDetailList = new ArrayList<>();
 
-    private boolean locationSearch = false;
+    private TextView mErrorBox;
 
-    private final String apiKey = "wX9NwuHnZU2ToO7GmGR9uw";
+    private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 1000;
 
-    private int cardNumber = 0;
+    private boolean locationSearch;
+
+    private final String TRIP_ARRAY = "Trip Array";
+    private final String POSITION = "position";
+    private int mPosition;
+
 
     public RouteDetailsFragment(){}
 
@@ -79,7 +94,18 @@ public class RouteDetailsFragment extends Fragment implements GoogleApiClient.Co
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
+        if (savedInstanceState != null && savedInstanceState.containsKey(POSITION)) {
+            mPosition = savedInstanceState.getInt(POSITION);
+        }
+
+        boolean tripDetailsExist = false;
+        if (savedInstanceState != null && savedInstanceState.containsKey(TRIP_ARRAY)) {
+            mTripDetailList = savedInstanceState.getParcelableArrayList(TRIP_ARRAY);
+            if(mTripDetailList.size() > 0) tripDetailsExist = true;
+        }
+
         View routeDetailsFragment = inflater.inflate(R.layout.fragment_route_details, container, false);
+        mErrorBox = (TextView) routeDetailsFragment.findViewById(R.id.error_box);
         mRecyclerView = (RecyclerView) routeDetailsFragment.findViewById(R.id.recycler_view);
 
         mLayoutManager = new LinearLayoutManager(getContext());
@@ -87,7 +113,15 @@ public class RouteDetailsFragment extends Fragment implements GoogleApiClient.Co
 
         String callingAct = getActivity().getLocalClassName();
 
-        if(callingAct.equals("activities.RouteDetails")){
+        if (!isNetWorkAvailable(getContext())){
+            mErrorBox.setText(getResources().getText(R.string.no_internet_connection));
+            mErrorBox.setVisibility(View.VISIBLE);
+        } else if( tripDetailsExist ){
+            mAdapter = new RouteDetailsRecyclerViewAdapter(mTripDetailList, this);
+            //  We've got a good thing going on.
+            mRecyclerView.setAdapter(mAdapter);
+
+        } else if(callingAct.equals("activities.RouteDetails")){
             Intent intent = getActivity().getIntent();
             final ArrayList<TripDetails> requestedTrips = intent.getParcelableArrayListExtra("tripDetails");
             if(requestedTrips != null){
@@ -98,32 +132,44 @@ public class RouteDetailsFragment extends Fragment implements GoogleApiClient.Co
             locationSearch = true;
 
         } else if (callingAct.equals("activities.MyRoutes")){
-            requestTripsByDetails(loadUserRoutesData());
+
+            final ArrayList<TripDetails> requestedTrips = loadUserRoutesData();
+            if(requestedTrips != null){
+                requestTripsByDetails(requestedTrips);
+            }
 
         } else {
-            Toast.makeText(getActivity(), "How did you get here??  Get out, get out, get out!!", Toast.LENGTH_LONG).show();
-
+            Log.e(TAG, "onCreateView: the routedetail fragment has been reached from an unknown view.");
         }
 
-        if (mGoogleApiClient == null) {
-            mGoogleApiClient = new GoogleApiClient.Builder(getActivity())
-                    .addConnectionCallbacks(this)
-                    .addOnConnectionFailedListener(this)
-                    .addApi(LocationServices.API)
-                    .build();
-        }
-
-        mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
-                mGoogleApiClient);
-
-        if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION)
-                == PackageManager.PERMISSION_GRANTED){
-            Log.d(TAG, "onCreateView: booms");
+        if (ContextCompat.checkSelfPermission(getActivity(),
+                Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(getActivity(),
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    0);
+            buildGoogleApiClient();
+        } else {
+            buildGoogleApiClient();
         }
 
         return routeDetailsFragment;
     }
 
+    protected synchronized void buildGoogleApiClient(){
+        if (mGoogleApiClient == null && checkPlayServices()) {
+            mGoogleApiClient = new GoogleApiClient.Builder(getContext())
+                    .addConnectionCallbacks(this)
+                    .addOnConnectionFailedListener(this)
+                    .addApi(LocationServices.API)
+                    .build();
+        }
+    }
+
+    /**
+     * retrieve all of a user's MyRoutes from MyRoutes database
+     * @return ArrayList of all MyRoutes for current user
+     */
     public ArrayList<TripDetails> loadUserRoutesData() {
         Uri routes = MyRoutesProvider.CONTENT_URI;
         ArrayList<TripDetails> allTripDetails = new ArrayList<>();
@@ -131,7 +177,8 @@ public class RouteDetailsFragment extends Fragment implements GoogleApiClient.Co
         String result = "Results:";
 
         if (!c.moveToFirst()) {
-            Toast.makeText(getActivity(), result + " no content yet!", Toast.LENGTH_LONG).show();
+            mErrorBox.setText(getResources().getText(R.string.no_saved_routes));
+            mErrorBox.setVisibility(View.VISIBLE);
             return null;
         }else{
             do{
@@ -151,6 +198,10 @@ public class RouteDetailsFragment extends Fragment implements GoogleApiClient.Co
         }
     }
 
+    /**
+     * Given the details of the desired routes, make a call to retrieve times for the routes
+     * @param requestedTrips ArrayList of the requested troops
+     */
     private void requestTripsByDetails(ArrayList<TripDetails> requestedTrips){
 
         for (int i = 0; i < requestedTrips.size(); i++) {
@@ -180,6 +231,10 @@ public class RouteDetailsFragment extends Fragment implements GoogleApiClient.Co
         }
     }
 
+    /**
+     * Given the details of the desired stop, make a call to retrieve times for the stop
+     * @param stopId MBTA stop id
+     */
     private void requestTripsByLocation(String stopId){
 
         HttpUrl BASE_URL = HttpUrl.parse("http://realtime.mbta.com/developer/api/v2/");
@@ -253,12 +308,13 @@ public class RouteDetailsFragment extends Fragment implements GoogleApiClient.Co
     }
 
     private void setupTimePredictionsForLocations(MbtaData stopTimePredictions){
-        TripDetails detailsOfTrip = new TripDetails();
-
-        detailsOfTrip.setStopId(stopTimePredictions.getStopId());
-        detailsOfTrip.setStationName(stopTimePredictions.getStopName());
 
         if( stopTimePredictions.getMode().size() > 0 ) {
+            TripDetails detailsOfTrip = new TripDetails();
+
+
+            detailsOfTrip.setStopId(stopTimePredictions.getStopId());
+            detailsOfTrip.setStationName(stopTimePredictions.getStopName());
             Mode currentMode = stopTimePredictions.getMode().get(0);
             detailsOfTrip.setMode(currentMode.getModeName());
             detailsOfTrip.setRouteId(currentMode.getRoute().get(0).getRouteId());
@@ -280,9 +336,9 @@ public class RouteDetailsFragment extends Fragment implements GoogleApiClient.Co
 
                 detailsOfTrip.setTimeEstimates(assembleHumanReadableTime(timePredictions));
             }
-        }
 
-        mTripDetailList.add(detailsOfTrip);
+            mTripDetailList.add(detailsOfTrip);
+        }
     }
 
     private Drawable extractModeImage(String mode){
@@ -373,6 +429,23 @@ public class RouteDetailsFragment extends Fragment implements GoogleApiClient.Co
 
     }
 
+    private boolean checkPlayServices() {
+        int resultCode = GooglePlayServicesUtil
+                .isGooglePlayServicesAvailable(getContext());
+        if (resultCode != ConnectionResult.SUCCESS) {
+            if (GooglePlayServicesUtil.isUserRecoverableError(resultCode)) {
+                GooglePlayServicesUtil.getErrorDialog(resultCode, getActivity(),
+                        PLAY_SERVICES_RESOLUTION_REQUEST).show();
+            } else {
+                Toast.makeText(getContext(),
+                        "This device is not supported.", Toast.LENGTH_LONG)
+                        .show();
+            }
+            return false;
+        }
+        return true;
+    }
+
     public void callLocationApi(){
         HttpUrl BASE_URL = HttpUrl.parse("http://realtime.mbta.com/developer/api/v2/");
 
@@ -393,8 +466,13 @@ public class RouteDetailsFragment extends Fragment implements GoogleApiClient.Co
             public void onResponse(Call<CurrentLocationStops> call, Response<CurrentLocationStops> response) {
                 Log.d(TAG, "onResponse: " + response.message());
                 CurrentLocationStops nearbyRoutes = response.body();
-                for (int i = 0; i < nearbyRoutes.getStop().size(); i++) {
-                    requestTripsByLocation(nearbyRoutes.getStop().get(i).getStopId());
+                if(nearbyRoutes.getStop().size() != 0) {
+                    for (int i = 0; i < nearbyRoutes.getStop().size(); i++) {
+                        requestTripsByLocation(nearbyRoutes.getStop().get(i).getStopId());
+                    }
+                } else {
+                    mErrorBox.setText(getResources().getText(R.string.no_nearby_stations_error));
+                    mErrorBox.setVisibility(View.VISIBLE);
                 }
             }
 
@@ -413,14 +491,15 @@ public class RouteDetailsFragment extends Fragment implements GoogleApiClient.Co
             mLatitudeText = String.valueOf(mLastLocation.getLatitude());
             mLongitudeText = String.valueOf(mLastLocation.getLongitude());
         } else {
-            mLatitudeText = "42.346961";
-            mLongitudeText = "-71.076640";
+            //  If we don't have a location, shut it down
+            locationSearch = false;
         }
 
         if(locationSearch) {
             callLocationApi();
         }
     }
+
 
     @Override
     public void onConnectionSuspended(int i) {
@@ -440,56 +519,95 @@ public class RouteDetailsFragment extends Fragment implements GoogleApiClient.Co
         super.onStop();
     }
 
-    public void fabOnClick(String intention){
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        savedInstanceState.putParcelableArrayList(TRIP_ARRAY, mTripDetailList);
+        savedInstanceState.putInt(POSITION, mPosition);
+        super.onSaveInstanceState(savedInstanceState);
+    }
+
+    @Override
+    public void onDestroy() {
+        Log.i(TAG, "Service destroyed!");
+        mGoogleApiClient.disconnect();
+        super.onDestroy();
+    }
+
+    /**
+     * Logic for dealing with Route Details fab click
+     * @param intention what the fab should do, can be "deleteSavedRoutes" or "addToTable"
+     * @param view the view id for when the fab needs to change
+     */
+    public void fabOnClick(String intention, @Nullable View view){
         if(locationSearch){
             Log.d(TAG, "fabOnClick: we shouldn't be seeing a fab because we're in location");
         } else if (intention.equals("deleteSavedRoutes")) {
             CardView cards = (CardView) mRecyclerView.findViewById(R.id.card_view);
             CheckBox checkboxCharlie = (CheckBox) cards.findViewById(R.id.delete_checkbox);
+            FloatingActionButton thisButton = (FloatingActionButton) view;
 
             if(checkboxCharlie.getVisibility() == View.VISIBLE){
                 showClickboxes = false;
-                for (int i = 0; i < mTripDetailList.size(); i++) {
-                    TripDetails oneTripDetail = mTripDetailList.get(i);
-                    if(oneTripDetail.getCheckboxState()){
-                        mTripDetailList.remove(oneTripDetail);
-
-                        ContentValues values = new ContentValues();
-                        ContentResolver contentResolver = getContext().getContentResolver();
-
-                        int idToDelete = oneTripDetail.getMyRouteId();
-
-                        Uri thisUri = MyRoutesProvider.CONTENT_URI.buildUpon().appendPath(String.valueOf(idToDelete)).build();
-
-                        int deletedIds = contentResolver.delete(thisUri, null, null);
-                        oneTripDetail.getMyRouteId();
-
-                    }
-                }
+                thisButton.setImageDrawable(getResources().getDrawable(R.drawable.ic_delete_white_24dp));
+                getActivity().setTitle(getResources().getText(R.string.my_routes));
+                deleteCheckedMyRoutes();
                 mAdapter.notifyDataSetChanged();
             } else if (checkboxCharlie.getVisibility() == View.GONE) {
                 showClickboxes = true;
+                thisButton.setImageDrawable(getResources().getDrawable(R.drawable.ic_delete_forever_white_24dp));
+                getActivity().setTitle(getResources().getText(R.string.delete_my_routes));
                 mAdapter.notifyDataSetChanged();
             }
         } else if (intention.equals("addToTable")){
                 addRouteToUserMyRoutes(mTripDetailList.get(0));
             }
+    }
+
+    /**
+     * deletes check routes from MyRoutes database.
+     */
+    private void deleteCheckedMyRoutes(){
+        for (int i = 0; i < mTripDetailList.size(); i++) {
+            TripDetails oneTripDetail = mTripDetailList.get(i);
+            if(oneTripDetail.getCheckboxState()){
+                mTripDetailList.remove(oneTripDetail);
+                ContentResolver contentResolver = getContext().getContentResolver();
+
+                int idToDelete = oneTripDetail.getMyRouteId();
+
+                Uri uriOfTripToDelete = MyRoutesProvider.CONTENT_URI.buildUpon().
+                        appendPath(String.valueOf(idToDelete)).build();
+                contentResolver.delete(uriOfTripToDelete, null, null);
+            }
         }
+    }
 
+    /**
+     * adds a TripDetails to the user's MyRoutes database
+     * @param aRequestedTrip - TripDetails of what needs to be added to the MyRoutes database
+     */
+    private void addRouteToUserMyRoutes(TripDetails aRequestedTrip){
+        ContentResolver contentResolver = getContext().getContentResolver();
 
-        private void addRouteToUserMyRoutes(TripDetails aRequestedTrip){
-            ContentValues values = new ContentValues();
-            ContentResolver contentResolver = getContext().getContentResolver();
+        ContentValues values = new ContentValues();
 
-            values.put(MyRoutesProvider.COLUMN_STOP, aRequestedTrip.getStopId());
-            values.put(MyRoutesProvider.COLUMN_ROUTE, aRequestedTrip.getRouteId());
-            values.put(MyRoutesProvider.COLUMN_MODE, aRequestedTrip.getMode());
-            values.put(MyRoutesProvider.COLUMN_DIRECTION, aRequestedTrip.getDirectionId());
+        values.put(MyRoutesProvider.COLUMN_STOP, aRequestedTrip.getStopId());
+        values.put(MyRoutesProvider.COLUMN_ROUTE, aRequestedTrip.getRouteId());
+        values.put(MyRoutesProvider.COLUMN_MODE, aRequestedTrip.getMode());
+        values.put(MyRoutesProvider.COLUMN_DIRECTION, aRequestedTrip.getDirectionId());
 
-            contentResolver.insert(MyRoutesProvider.CONTENT_URI, values);
+        contentResolver.insert(MyRoutesProvider.CONTENT_URI, values);
 
-            Toast.makeText(getContext(),
-                    getResources().getText(R.string.route_added_toast), Toast.LENGTH_LONG).show();
-        }
+        Toast.makeText(getContext(),
+                getResources().getText(R.string.route_added_toast), Toast.LENGTH_LONG).show();
+    }
+
+    public boolean isNetWorkAvailable(Context context) {
+        ConnectivityManager connectivityManager =
+                (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnectedOrConnecting();
+    }
+
 
 }

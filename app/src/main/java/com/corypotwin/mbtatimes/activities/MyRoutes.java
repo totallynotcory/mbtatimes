@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.provider.UserDictionary;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -46,10 +47,16 @@ public class MyRoutes extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     RouteDetailsFragment aRouteDetailsFragment;
+    final String FRAGMENT_TAG = "MyRoutesFragmentDetail";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (savedInstanceState != null) {
+            //Restore the fragment's instance
+            aRouteDetailsFragment = (RouteDetailsFragment) getSupportFragmentManager().getFragment(savedInstanceState, FRAGMENT_TAG);
+        }
+
 
         setContentView(R.layout.activity_my_routes);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -69,6 +76,14 @@ public class MyRoutes extends AppCompatActivity
     }
 
     @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        //Save the fragment's instance
+        getSupportFragmentManager().putFragment(outState, FRAGMENT_TAG, aRouteDetailsFragment);
+    }
+
+    @Override
     public void onBackPressed() {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
@@ -76,28 +91,6 @@ public class MyRoutes extends AppCompatActivity
         } else {
             super.onBackPressed();
         }
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.my_routes, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
     }
 
     public void callApi(View button) {
@@ -122,16 +115,13 @@ public class MyRoutes extends AppCompatActivity
             this.finish();
             Intent intent = new Intent(this, CriteriaSearch.class);
             startActivity(intent);
-        } else if (id == R.id.nav_settings) {
-            //  TODO:  Add Settings intent
         }
-
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
 
     public void deleteFabOnClick(View view){
-        aRouteDetailsFragment.fabOnClick("deleteSavedRoutes");
+        aRouteDetailsFragment.fabOnClick("deleteSavedRoutes", view);
     }
 }

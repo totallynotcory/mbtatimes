@@ -19,10 +19,18 @@ public class RouteDetails extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener{
 
     RouteDetailsFragment aRouteDetailsFragment;
+    final String FRAGMENT_TAG = "RouteDetailsFragmentDetail";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (savedInstanceState != null) {
+            //Restore the fragment's instance
+            aRouteDetailsFragment = (RouteDetailsFragment)  getSupportFragmentManager().getFragment(savedInstanceState, FRAGMENT_TAG);
+        }
+
+
+
         setContentView(R.layout.activity_route_details);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -40,8 +48,16 @@ public class RouteDetails extends AppCompatActivity
         aRouteDetailsFragment = (RouteDetailsFragment) getSupportFragmentManager().findFragmentById(R.id.content_route_details);
     }
 
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        //Save the fragment's instance
+        getSupportFragmentManager().putFragment(outState, FRAGMENT_TAG, aRouteDetailsFragment);
+    }
+
     public void fabOnClick(View view){
-        aRouteDetailsFragment.fabOnClick("addToTable");
+        aRouteDetailsFragment.fabOnClick("addToTable", null);
     }
 
     @SuppressWarnings("StatementWithEmptyBody")
@@ -60,8 +76,6 @@ public class RouteDetails extends AppCompatActivity
             this.finish();
             Intent intent = new Intent(this, MyRoutes.class);
             startActivity(intent);
-        } else if (id == R.id.nav_settings) {
-            //  TODO:  Add Settings intent
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);

@@ -32,6 +32,7 @@ public class TripDetails implements Parcelable {
         directionId = in.readInt();
         routeAndDirection = in.readString();
         stationName = in.readString();
+        timeEstimates = in.readString();
     }
 
     public static final Creator<TripDetails> CREATOR = new Creator<TripDetails>() {
@@ -58,6 +59,8 @@ public class TripDetails implements Parcelable {
         dest.writeString(mode);
         dest.writeInt(directionId);
         dest.writeString(routeAndDirection);
+        dest.writeString(stationName);
+        dest.writeString(timeEstimates);
     }
 
     public String getStopId() {

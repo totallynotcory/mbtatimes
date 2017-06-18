@@ -13,42 +13,56 @@
     tools:showIn="@layout/activity_criteria_search"
     android:orientation="vertical">
 
-    <Spinner
-        android:id="@+id/mode_spinner"
-        android:dropDownSelector="@color/primary_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
-
-    <Spinner
-        android:id="@+id/route_spinner"
+    <TextView
+        android:id="@+id/no_connection_error_box"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textColor="@color/primary_text"
-        android:layout_marginTop="32dp"
-        android:visibility="invisible"/>
+        android:layout_height="match_parent"
+        android:text="@string/no_internet_connection"
+        android:visibility="gone"
+        />
 
-    <Spinner
-        android:id="@+id/direction_spinner"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textColor="@color/primary_text"
-        android:layout_marginTop="32dp"
-        android:visibility="invisible"/>
+    <LinearLayout
+        android:id="@+id/spinner_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-    <Spinner
-        android:id="@+id/stop_spinner"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textColor="@color/primary_text"
-        android:layout_marginTop="32dp"
-        android:visibility="invisible"/>
+        <Spinner
+            android:id="@+id/mode_spinner"
+            android:dropDownSelector="@color/primary_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
 
+        <Spinner
+            android:id="@+id/route_spinner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/primary_text"
+            android:layout_marginTop="32dp"
+            android:visibility="invisible"/>
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Call API"
-        android:id="@+id/button"
-        android:layout_marginTop="32dp"
-        android:onClick="callApi"/>
+        <Spinner
+            android:id="@+id/direction_spinner"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/primary_text"
+            android:layout_marginTop="32dp"
+            android:visibility="invisible"/>
+
+        <Spinner
+            android:id="@+id/stop_spinner"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/primary_text"
+            android:layout_marginTop="32dp"
+            android:visibility="invisible"/>
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Call API"
+            android:id="@+id/button"
+            android:layout_marginTop="32dp"
+            android:onClick="callApi"/>
+        </LinearLayout>
 </LinearLayout>

@@ -14,13 +14,22 @@ import android.view.MenuItem;
 import android.view.View;
 
 import com.corypotwin.mbtatimes.R;
+import com.corypotwin.mbtatimes.fragments.RouteDetailsFragment;
 
 public class NearbyStations extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
+    RouteDetailsFragment aRouteDetailsFragment;
+    final String FRAGMENT_TAG = "NearbyStationsFragmentDetail";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (savedInstanceState != null) {
+            //Restore the fragment's instance
+            aRouteDetailsFragment = (RouteDetailsFragment)  getSupportFragmentManager().getFragment(savedInstanceState, FRAGMENT_TAG);
+        }
+
         setContentView(R.layout.activity_nearby_stations);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -35,6 +44,15 @@ public class NearbyStations extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
         navigationView.getMenu().getItem(1).setChecked(true);
 
+        aRouteDetailsFragment = (RouteDetailsFragment) getSupportFragmentManager().findFragmentById(R.id.content_nearby_stations);
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        //Save the fragment's instance
+        getSupportFragmentManager().putFragment(outState, FRAGMENT_TAG, aRouteDetailsFragment);
     }
 
     //  TODO:  Generalize this so it can be called from everywhere instead of supporting it all over the place.
@@ -54,8 +72,6 @@ public class NearbyStations extends AppCompatActivity
             this.finish();
             Intent intent = new Intent(this, MyRoutes.class);
             startActivity(intent);
-        } else if (id == R.id.nav_settings) {
-            //  TODO:  Add Settings intent
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);

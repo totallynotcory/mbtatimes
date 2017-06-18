@@ -1,6 +1,9 @@
 package com.corypotwin.mbtatimes.activities;
 
+import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
@@ -18,6 +21,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import com.corypotwin.mbtatimes.MbtaApiEndpoint;
 import com.corypotwin.mbtatimes.R;
@@ -83,21 +87,31 @@ public class CriteriaSearch extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
         navigationView.getMenu().getItem(2).setChecked(true);
 
-        // modeSpinner
-        modeSpinner = (Spinner) findViewById(R.id.mode_spinner);
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
-                R.array.mode_array, android.R.layout.simple_spinner_item);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        modeSpinner.setOnItemSelectedListener(new modeSpinnerSelect());
-        modeSpinner.setAdapter(adapter);
-        getModeResults();
-
-        getSupportActionBar().setDisplayHomeAsUpEnabled(false);
-
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
         client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
+        TextView errorBox = (TextView) findViewById(R.id.no_connection_error_box);
 
+        if(isNetWorkAvailable(this)) {
+            errorBox.setVisibility(View.GONE);
+            // modeSpinner
+            modeSpinner = (Spinner) findViewById(R.id.mode_spinner);
+            ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
+                    R.array.mode_array, android.R.layout.simple_spinner_item);
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            modeSpinner.setOnItemSelectedListener(new modeSpinnerSelect());
+            modeSpinner.setAdapter(adapter);
+            getModeResults();
+
+            routeSpinner = (Spinner) findViewById(R.id.route_spinner);
+            stopSpinner = (Spinner) findViewById(R.id.stop_spinner);
+            directionSpinner = (Spinner) findViewById(R.id.direction_spinner);
+
+            getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+
+        } else {
+            errorBox.setVisibility(View.VISIBLE);
+        }
     }
 
     @Override
@@ -194,7 +208,6 @@ public class CriteriaSearch extends AppCompatActivity
                 }
             }
 
-            routeSpinner = (Spinner) findViewById(R.id.route_spinner);
             ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
                     android.R.layout.simple_spinner_item, routes);
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -248,7 +261,6 @@ public class CriteriaSearch extends AppCompatActivity
                 directionsHashMap.put(directionName, directionId);
             }
 
-            directionSpinner = (Spinner) findViewById(R.id.direction_spinner);
             ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
                     android.R.layout.simple_spinner_item, directions);
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -274,7 +286,6 @@ public class CriteriaSearch extends AppCompatActivity
                 stopHashMap.put(stopName, stopId);
             }
 
-            stopSpinner = (Spinner) findViewById(R.id.stop_spinner);
             ArrayAdapter<String> adapter = new ArrayAdapter<>(getBaseContext(),
                     android.R.layout.simple_spinner_item, stops);
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -291,10 +302,10 @@ public class CriteriaSearch extends AppCompatActivity
 
     public void callApi(View button) {
 
-        if(directionSpinner.getSelectedItem() != null &&
-                modeSpinner.getSelectedItem() != null &&
-                routeSpinner.getSelectedItem() != null &&
-                stopSpinner.getSelectedItem() != null) {
+        if(directionSpinner.getSelectedItem() != null && directionSpinner != null &&
+                modeSpinner.getSelectedItem() != null && modeSpinner != null &&
+                routeSpinner.getSelectedItem() != null && routeSpinner !=null &&
+                stopSpinner.getSelectedItem() != null && stopSpinner !=null) {
             ArrayList<TripDetails> tripRequestDataList = new ArrayList<>();
             TripDetails tripRequestData = new TripDetails();
             tripRequestData.setDirectionId(directionsHashMap.get(directionSpinner.getSelectedItem().toString()));
@@ -329,12 +340,18 @@ public class CriteriaSearch extends AppCompatActivity
             this.finish();
             Intent intent = new Intent(this, MyRoutes.class);
             startActivity(intent);
-        } else if (id == R.id.nav_settings) {
-            //  TODO:  Add Settings intent
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+
+    public boolean isNetWorkAvailable(Context context) {
+        ConnectivityManager connectivityManager =
+                (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnectedOrConnecting();
     }
 }

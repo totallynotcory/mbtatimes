@@ -33,8 +33,7 @@
                 android:paddingLeft="16dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:scaleType="centerCrop"
-                android:src="@drawable/ic_notification_time_to_leave"/>
+                android:scaleType="centerCrop" />
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
