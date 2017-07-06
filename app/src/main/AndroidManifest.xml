@@ -61,7 +61,7 @@
         <receiver
             android:icon="@drawable/ic_launcher"
             android:label="MBTA Times Widget"
-            android:name=".WidgetProvider" >
+            android:name=".widget.WidgetProvider" >
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
@@ -69,7 +69,7 @@
                 android:resource="@xml/appwidget" />
         </receiver>
 
-        <service android:name=".UpdateWidgetService"></service>
+        <service android:name=".widget.UpdateWidgetService"></service>
     </application>
 
 

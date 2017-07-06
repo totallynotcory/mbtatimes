@@ -5,6 +5,7 @@ import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.Loader;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -18,7 +19,9 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.support.v4.app.LoaderManager;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.CursorLoader;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -27,6 +30,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
+import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -60,15 +64,12 @@ import retrofit2.converter.gson.GsonConverterFactory;
  * A placeholder fragment containing a simple view.
  */
 public class RouteDetailsFragment extends Fragment implements GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener{
+        GoogleApiClient.OnConnectionFailedListener, LoaderManager.LoaderCallbacks<Cursor>{
 
     final String TAG = "routedetailsfragment";
 
-    private Location mLastLocation;
-    private String mLatitudeText;
-    private String mLongitudeText;
-
     private GoogleApiClient mGoogleApiClient;
+    private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 1000;
 
     public boolean showClickboxes = false;
 
@@ -80,14 +81,25 @@ public class RouteDetailsFragment extends Fragment implements GoogleApiClient.Co
 
     private TextView mErrorBox;
 
-    private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 1000;
+    SimpleCursorAdapter mCursorAdapter;
+    String mCurFilter;
 
     private boolean locationSearch;
+    private Location mLastLocation;
+    private String mLatitudeText;
+    private String mLongitudeText;
 
     private final String TRIP_ARRAY = "Trip Array";
     private final String POSITION = "position";
     private int mPosition;
 
+    final String[] STRING_PROJECTION = new String[] {
+            MyRoutesContract.ID,
+            MyRoutesContract.COLUMN_MODE,
+            MyRoutesContract.COLUMN_STOP,
+            MyRoutesContract.COLUMN_ROUTE,
+            MyRoutesContract.COLUMN_DIRECTION
+    };
 
     public RouteDetailsFragment(){}
 
@@ -133,6 +145,12 @@ public class RouteDetailsFragment extends Fragment implements GoogleApiClient.Co
             locationSearch = true;
 
         } else if (callingAct.equals("activities.MyRoutes")){
+
+            mCursorAdapter = new SimpleCursorAdapter(getActivity(),
+                                    R.layout.activity_route_details, null, STRING_PROJECTION, null, 0);
+//            setListAdapter(mCursorAdapter);
+
+            getLoaderManager().initLoader(0, null, this);
 
             final ArrayList<TripDetails> requestedTrips = loadUserRoutesData();
             if(requestedTrips != null){
@@ -443,6 +461,36 @@ public class RouteDetailsFragment extends Fragment implements GoogleApiClient.Co
 
         return returnString + "; ";
     }
+
+    @Override
+    public android.support.v4.content.Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        Uri baseUri;
+        if (mCurFilter != null) {
+            baseUri = Uri.withAppendedPath(MyRoutesContract.CONTENT_URI,
+                    Uri.encode(mCurFilter));
+        } else {
+            baseUri = MyRoutesContract.CONTENT_URI;
+        }
+
+        String select = "";
+        return new CursorLoader(getActivity(), baseUri,
+                STRING_PROJECTION, select, null,
+                MyRoutesContract.ID + " COLLATE LOCALIZED ASC");
+    }
+
+    @Override
+    public void onLoadFinished(android.support.v4.content.Loader<Cursor> loader, Cursor data) {
+
+        if(data != null && !data.equals(null)) {
+            mCursorAdapter.swapCursor(data);
+        }
+        }
+
+    @Override
+    public void onLoaderReset(android.support.v4.content.Loader<Cursor> loader) {
+        mCursorAdapter.swapCursor(null);
+    }
+
 
     /**
      * when getting data back from the MBTA, this makes calls to deal with it
