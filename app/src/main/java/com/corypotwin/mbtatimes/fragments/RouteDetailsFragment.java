@@ -146,16 +146,10 @@ public class RouteDetailsFragment extends Fragment implements GoogleApiClient.Co
 
         } else if (callingAct.equals("activities.MyRoutes")){
 
-            mCursorAdapter = new SimpleCursorAdapter(getActivity(),
-                                    R.layout.activity_route_details, null, STRING_PROJECTION, null, 0);
-//            setListAdapter(mCursorAdapter);
-
             getLoaderManager().initLoader(0, null, this);
 
-            final ArrayList<TripDetails> requestedTrips = loadUserRoutesData();
-            if(requestedTrips != null){
-                requestTripsByDetails(requestedTrips);
-            }
+//            mCursorAdapter = new SimpleCursorAdapter(getActivity(),
+//                    R.layout.activity_route_details, null, STRING_PROJECTION, null, 0);
 
         } else {
             Log.e(TAG, "onCreateView: the routedetail fragment has been reached from an unknown view.");
@@ -207,11 +201,8 @@ public class RouteDetailsFragment extends Fragment implements GoogleApiClient.Co
      * retrieve all of a user's MyRoutes from MyRoutes database
      * @return ArrayList of all MyRoutes for current user
      */
-    public ArrayList<TripDetails> loadUserRoutesData() {
-        Uri routes = MyRoutesContract.CONTENT_URI;
+    public ArrayList<TripDetails> loadUserRoutesData(Cursor c) {
         ArrayList<TripDetails> allTripDetails = new ArrayList<>();
-        Cursor c = getActivity().getContentResolver().query(routes, null, null, null, MyRoutesContract.COLUMN_ROUTE);
-        String result = "Results:";
 
         if (!c.moveToFirst()) {
             mErrorBox.setText(getResources().getText(R.string.no_saved_routes));
@@ -482,13 +473,15 @@ public class RouteDetailsFragment extends Fragment implements GoogleApiClient.Co
     public void onLoadFinished(android.support.v4.content.Loader<Cursor> loader, Cursor data) {
 
         if(data != null && !data.equals(null)) {
-            mCursorAdapter.swapCursor(data);
+            final ArrayList<TripDetails> requestedTrips = loadUserRoutesData(data);
+            if(requestedTrips != null){
+                requestTripsByDetails(requestedTrips);
+            }
         }
-        }
+    }
 
     @Override
     public void onLoaderReset(android.support.v4.content.Loader<Cursor> loader) {
-        mCursorAdapter.swapCursor(null);
     }
 
 
