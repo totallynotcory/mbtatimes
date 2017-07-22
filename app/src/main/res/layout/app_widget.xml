@@ -6,23 +6,50 @@
     android:layout_height="match_parent"
     android:background="#55000000">
 
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="3"
-        android:gravity="center"
-        android:text="000"
-        android:textSize="@dimen/abc_text_size_large_material"
-        android:textStyle="bold"/>
-
-    <Button
-        android:id="@+id/actionButton"
+    <ImageView
+        android:id="@+id/app_icon"
         android:padding="8dp"
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="1"
         android:gravity="center"
-        android:src="@drawable/common_google_signin_btn_icon_dark_focused" />
+        android:clickable="true"
+        android:src="@drawable/ic_launcher" />
+
+    <Button
+        android:id="@+id/my_routes_button"
+        android:padding="8dp"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:clickable="true"
+        android:text="My\nRoutes"
+        android:adjustViewBounds="true"
+        android:scaleType="fitXY"/>
+
+    <Button
+        android:id="@+id/location_button"
+        android:padding="8dp"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:clickable="true"
+        android:text="Nearby"
+        android:adjustViewBounds="true"
+        android:scaleType="fitXY"/>
+
+    <Button
+        android:id="@+id/search_button"
+        android:padding="8dp"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:clickable="true"
+        android:text="Search"
+        android:adjustViewBounds="true"
+        android:scaleType="fitXY"/>
 
 </LinearLayout>
