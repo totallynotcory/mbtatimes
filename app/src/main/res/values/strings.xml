@@ -30,4 +30,8 @@
     <string name="add_current">Add Current Route To Favorites Fab</string>
 
     <string name="coming_in">Coming in:</string>
+    <string name="appwidget_text">EXAMPLE</string>
+    <string name="add_widget">Add widget</string>
+
+    <string name="last_update">Last Update: </string>
 </resources>
