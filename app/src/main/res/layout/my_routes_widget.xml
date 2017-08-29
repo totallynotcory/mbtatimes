@@ -6,18 +6,24 @@
     >
 
     <LinearLayout
-        android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
 
         <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
             android:id="@+id/text_test"
-            android:text="@string/app_name"
-            android:paddingTop="8dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:paddingLeft="8dp"
-            />
+            android:paddingTop="8dp"
+            android:text="@string/app_name" />
+
+        <Button
+            android:id="@+id/refresh_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right"
+            android:text="THIS IS A BUTTON" />
 
     </LinearLayout>
 

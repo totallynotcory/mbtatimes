@@ -21,6 +21,8 @@ import com.google.android.gms.common.api.GoogleApiClient;
 
 import java.util.Random;
 
+import static android.content.ContentValues.TAG;
+
 /**
  * Created by ctpotwin on 6/27/17.
  */
@@ -28,8 +30,12 @@ import java.util.Random;
 public class UpdateWidgetService extends RemoteViewsService {
     private static final String LOG = "de.vogella.android.widget.example";
 
+
+
     @Override
     public RemoteViewsFactory onGetViewFactory(Intent intent) {
+        Log.e(TAG, "onGetViewFactory: nver called");
         return new WidgetDataProvider(this,intent);
     }
+
 }

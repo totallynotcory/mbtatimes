@@ -1,6 +1,7 @@
 package com.corypotwin.mbtatimes.widget;
 
 import android.annotation.TargetApi;
+import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.content.Context;
@@ -44,12 +45,35 @@ public class MyRoutesWidget extends AppWidgetProvider {
     private Cursor cursor;
     private Intent intent;
     private ArrayList<TripDetails> listPositionToRouteData = new ArrayList<>();
+    public static String WIDGET_BUTTON = "MY_ROUTES_WIDGET.WIDGET_BUTTON";
+    public static String APP_REFRESH_ID = "REFRESH_ID";
+
+
+    @Override
+    public void onReceive(Context context, Intent intent) {
+
+        if (WIDGET_BUTTON.equals(intent.getAction())) {
+            int[] appId = new int[] {intent.getIntExtra(APP_REFRESH_ID, 0)};
+            onUpdate(context,
+                     AppWidgetManager.getInstance(context),
+                     appId);
+        }
+        super.onReceive(context, intent);
+    }
 
     static void updateAppWidget(Context context, AppWidgetManager appWidgetManager,
                                 int appWidgetId, ArrayList<TripDetails> displayData) {
 
+        Log.e(TAG, "updateAppWidget: this is the appId" + appWidgetId);
         // Construct the RemoteViews object
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.my_routes_widget);
+
+        Intent clickIntent = new Intent(WIDGET_BUTTON);
+        clickIntent.putExtra(APP_REFRESH_ID, appWidgetId);
+        PendingIntent clickPendingIntent = PendingIntent.getBroadcast(context, 0, clickIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT);
+        views.setOnClickPendingIntent(R.id.refresh_button, clickPendingIntent);
+
         views.setTextViewText(R.id.last_update_text, "Last Update: " +
                 DateFormat.getDateTimeInstance().format(new Date()));
 
@@ -68,7 +92,6 @@ public class MyRoutesWidget extends AppWidgetProvider {
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
 
         initCursor(context);
-        Log.e(TAG, "onUpdate: The cursor is loaded");
         // There may be multiple widgets active, so update all of them
         for (int appWidgetId : appWidgetIds) {
             // Instruct the widget manager to update the widget
@@ -84,9 +107,6 @@ public class MyRoutesWidget extends AppWidgetProvider {
         }
 
         final long identityToken = Binder.clearCallingIdentity();
-        /**This is done because the widget runs as a separate thread
-         when compared to the current app and hence the app's data won't be accessible to it
-         because I'm using a content provided **/
         cursor = context.getContentResolver().query(MyRoutesContract.CONTENT_URI,
                 null, null, null, MyRoutesContract.COLUMN_ROUTE);
         Binder.restoreCallingIdentity(identityToken);
@@ -97,7 +117,7 @@ public class MyRoutesWidget extends AppWidgetProvider {
         if (isNetWorkAvailable(context)) {
             cursor.moveToFirst();
             while (!cursor.isAfterLast()) {
-                Log.e(TAG, "setupCallToApi: this is how many we have in the cursor");
+                Log.e(TAG, "we're setting up the routes!");
                 TripDetails thisRequestedTrip = new TripDetails();
                 thisRequestedTrip.setMyRouteId(cursor.getInt(cursor.getColumnIndex(MyRoutesContract.ID)));
                 thisRequestedTrip.setMode(cursor.getString(cursor.getColumnIndex(MyRoutesContract.COLUMN_MODE)));
@@ -165,7 +185,6 @@ public class MyRoutesWidget extends AppWidgetProvider {
             this.appWidgetManager = appWidgetManager;
             this.appWidgetId = appWidgetId;
             this.context = context;
-            Log.e(TAG, "RouteDetailsCallback: we init the callback");
         }
 
         @Override
@@ -174,9 +193,11 @@ public class MyRoutesWidget extends AppWidgetProvider {
             MbtaData stopTimePredictions = response.body();
             setupTimePredictions(stopTimePredictions, mode, routeId, directionId,
                     aRequestedTrip);
+            Log.e(TAG, "onResponse: we have the data from the server");
 
             if(listPositionToRouteData.size() == cursor.getCount()) {
                 updateAppWidget(context, appWidgetManager, appWidgetId, listPositionToRouteData);
+                listPositionToRouteData = new ArrayList<>();
             }
 
 
@@ -285,7 +306,9 @@ public class MyRoutesWidget extends AppWidgetProvider {
         b.putString("stringhere", "stringbuddy");
         Log.e(TAG, "setRemoteAdapter: " + displayData.size() );
         remoteViewsIntent.putExtra("bundle", b);
+        Log.e(TAG, "setRemoteAdapter: we're attempting to attach the remote adapter");
         views.setRemoteAdapter(R.id.widget_list_view, remoteViewsIntent);
+
     }
 
 

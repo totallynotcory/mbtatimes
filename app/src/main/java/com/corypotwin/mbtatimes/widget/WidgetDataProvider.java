@@ -33,7 +33,7 @@ public class WidgetDataProvider implements RemoteViewsService.RemoteViewsFactory
         this.intent = intent;
         Bundle b = intent.getBundleExtra("bundle");
         listPositionToRouteData = b.getParcelableArrayList("myRoutesData");
-        Log.e(TAG, "WidgetDataProvider: get on wid cha bad self" + listPositionToRouteData.size());
+        Log.e(TAG, "WidgetDataProvider: get on wid cha bad self " + listPositionToRouteData.size());
     }
 
 
@@ -43,6 +43,7 @@ public class WidgetDataProvider implements RemoteViewsService.RemoteViewsFactory
 
     @Override
     public void onDataSetChanged() {
+        Log.e(TAG, "onDataSetChanged: we get here though");
     }
 
 

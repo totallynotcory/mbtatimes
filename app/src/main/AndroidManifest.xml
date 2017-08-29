@@ -62,6 +62,7 @@
         <receiver android:name=".widget.MyRoutesWidget">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="MY_ROUTES_WIDGET.WIDGET_BUTTON" />
             </intent-filter>
 
             <meta-data
