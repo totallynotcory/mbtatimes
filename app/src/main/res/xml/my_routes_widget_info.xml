@@ -4,9 +4,9 @@
     android:initialLayout="@layout/my_routes_widget"
     android:minHeight="110dp"
     android:minWidth="250dp"
-    android:previewImage="@drawable/example_appwidget_preview"
+    android:previewImage="@drawable/mbtatimes_widget_preview"
     android:resizeMode="horizontal|vertical"
-    android:updatePeriodMillis="9000"
+    android:updatePeriodMillis="1800000"
     android:widgetCategory="home_screen">
 
 </appwidget-provider>
