@@ -48,10 +48,6 @@ public class MyRoutesProvider extends ContentProvider {
     // database declaration
     private SQLiteDatabase database;
 
-    public MyRoutesProvider(){
-
-    }
-
     @Override
     public boolean onCreate() {
         Context context = getContext();
@@ -59,10 +55,7 @@ public class MyRoutesProvider extends ContentProvider {
         // permissions to be writable
         database = dbHelper.getWritableDatabase();
 
-        if(database == null)
-            return false;
-        else
-            return true;
+        return database != null;
     }
 
     @Override
@@ -83,7 +76,7 @@ public class MyRoutesProvider extends ContentProvider {
             default:
                 throw new IllegalArgumentException("Unknown URI " + uri);
         }
-        if (sortOrder == null || sortOrder == ""){
+        if (sortOrder == null || sortOrder.equals("")){
             // No sorting-> sort on names by default
             sortOrder = MyRoutesContract.COLUMN_STOP;
         }

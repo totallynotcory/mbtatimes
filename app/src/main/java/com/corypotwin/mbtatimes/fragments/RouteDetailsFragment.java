@@ -131,7 +131,6 @@ public class RouteDetailsFragment extends Fragment implements GoogleApiClient.Co
             mErrorBox.setVisibility(View.VISIBLE);
         } else if( tripDetailsExist ){
             mAdapter = new RouteDetailsRecyclerViewAdapter(mTripDetailList, this);
-            //  We've got a good thing going on.
             mRecyclerView.setAdapter(mAdapter);
 
         } else if(callingAct.equals("activities.RouteDetails")){
@@ -147,9 +146,6 @@ public class RouteDetailsFragment extends Fragment implements GoogleApiClient.Co
         } else if (callingAct.equals("activities.MyRoutes")){
 
             getLoaderManager().initLoader(0, null, this);
-
-//            mCursorAdapter = new SimpleCursorAdapter(getActivity(),
-//                    R.layout.activity_route_details, null, STRING_PROJECTION, null, 0);
 
         } else {
             Log.e(TAG, "onCreateView: the routedetail fragment has been reached from an unknown view.");

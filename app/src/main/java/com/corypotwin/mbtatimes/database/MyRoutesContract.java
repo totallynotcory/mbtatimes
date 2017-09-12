@@ -9,7 +9,7 @@ import android.net.Uri;
 
 public final class MyRoutesContract {
 
-    public MyRoutesContract(){}
+    private MyRoutesContract(){}
 
     public static final String CONTENT_AUTHORITY = "com.corypotwin.mbtatimes.userroutes";
     static final String URL = "content://" + CONTENT_AUTHORITY + "/routes";

@@ -2,7 +2,7 @@
 Project built for the Udacity Android Nanodegree
 
 ## Description:
-For the final project of the Udacity Android Nanodegree, students are given freedom to create an App of their choice.  This project is intended to combine all skills acquired throughout the nanodegree.  This App makes use of several libraries, the Boston MBTA API, follows material design conventions.
+For the final project of the Udacity Android Nanodegree, students are given freedom to create an App of their choice.  This project is intended to combine all skills acquired throughout the nanodegree.  This App makes use of several libraries, the Boston MBTA API, and follows material design conventions.
 
 ## Getting Started
 In order to run this App, you'll first need to acquire an API key from http://realtime.mbta.com/portal
